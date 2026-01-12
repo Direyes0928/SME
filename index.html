@@ -315,24 +315,72 @@ function runSearch(query) {
 }
 
 // new 2026-01-12
+function extractKeySentences(text, maxSentences = 2) {
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  return sentences.slice(0, maxSentences).join(" ");
+}
+
+// new 2026-01-12
+function synthesizeAnswer(matches) {
+  if (matches.length === 0) return null;
+
+  // sort by doc then chunk order
+  const ordered = [...matches].sort((a, b) => {
+    if (a.docName !== b.docName) {
+      return a.docName.localeCompare(b.docName);
+    }
+    return a.index - b.index;
+  });
+
+  let answerParts = [];
+  let sources = [];
+
+  ordered.forEach(match => {
+    answerParts.push(
+      extractKeySentences(match.text)
+    );
+
+    sources.push(
+      `${match.docName} (chunk ${match.index + 1})`
+    );
+  });
+
+  return {
+    answer: answerParts.join(" "),
+    sources: [...new Set(sources)]
+  };
+}
+
+// new 2026-01-12
 function renderSearchResults(matches) {
+  searchResults.innerHTML = "";
+
   if (matches.length === 0) {
     searchResults.innerHTML = "<p>No matching content found.</p>";
     return;
   }
 
-  matches.forEach(match => {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.style.marginTop = "0.5rem";
+  const synthesized = synthesizeAnswer(matches);
 
-    div.innerHTML = `
-      <p>${highlightMatch(match.text)}</p>
-      <small>Source: ${match.docName} (chunk ${match.index + 1})</small>
-    `;
+  if (!synthesized) {
+    searchResults.innerHTML = "<p>No matching content found.</p>";
+    return;
+  }
 
-    searchResults.appendChild(div);
-  });
+  const answerCard = document.createElement("div");
+  answerCard.className = "card";
+  answerCard.style.marginTop = "0.5rem";
+
+  answerCard.innerHTML = `
+    <p>${synthesized.answer}</p>
+    <small><strong>Sources:</strong><br>${synthesized.sources.join("<br>")}</small>
+  `;
+
+  searchResults.appendChild(answerCard);
 }
 
 // new 2026-01-12
