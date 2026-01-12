@@ -164,8 +164,13 @@
 
 <section class="chat-section">
   <div class="card">
-    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 2C5.35786 2 2 5.35786 2 9.5C2 13.6421 5.35786 17 9.5 17C13.6421 17 17 13.6421 17 9.5C17 5.35786 13.6421 2 9.5 2Z" stroke="#e5e7eb" stroke-width="2"/><path d="M9.5 6C7.567 6 6 7.567 6 9.5C6 11.433 7.567 13 9.5 13C11.433 13 13 11.433 13 9.5C13 7.567 11.433 6 9.5 6Z" stroke="#e5e7eb" stroke-width="2"/><path d="M9.5 9.5L9.5 9.5" stroke="#e5e7eb" stroke-width="2" stroke-linecap="round"/></svg> Ask Your SME</strong>
-    <input type="text" placeholder="What should I review today?" />
+    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 3 19 11Z" stroke="#e5e7eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Ask Your SME</strong>
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Ask a question or type keywords..."
+    />
+    <div id="searchResults"></div>
   </div>
 </section>
 </div>
@@ -262,6 +267,80 @@ function chunkAllDocuments() {
 // new 2026-01-12
 function renderChunkStatus() {
   chunkStatus.textContent = `${chunks.length} chunk(s) created.`;
+}
+
+// new 2026-01-12
+const searchInput = document.getElementById("searchInput");
+const searchResults = document.getElementById("searchResults");
+
+// new 2026-01-12
+searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    runSearch(searchInput.value);
+  }
+});
+
+// new 2026-01-12
+const STOP_WORDS = new Set([
+  "what", "are", "is", "the", "on", "in", "of", "to", "and", "for"
+]);
+
+// new 2026-01-12
+function normalizeTerms(query) {
+  return query
+    .toLowerCase()
+    .replace(/[^\w\s]/g, "") // remove punctuation
+    .split(/\s+/)
+    .filter(term => term.length > 2 && !STOP_WORDS.has(term));
+}
+
+// new 2026-01-12
+function runSearch(query) {
+  searchResults.innerHTML = "";
+
+  const terms = normalizeTerms(query);
+
+  if (terms.length === 0) {
+    searchResults.innerHTML = "<p>Please enter a more specific question.</p>";
+    return;
+  }
+
+  const matches = chunks.filter(chunk =>
+    terms.some(term =>
+      chunk.text.toLowerCase().includes(term)
+    )
+  );
+
+  renderSearchResults(matches);
+}
+
+// new 2026-01-12
+function renderSearchResults(matches) {
+  if (matches.length === 0) {
+    searchResults.innerHTML = "<p>No matching content found.</p>";
+    return;
+  }
+
+  matches.forEach(match => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.style.marginTop = "0.5rem";
+
+    div.innerHTML = `
+      <p>${highlightMatch(match.text)}</p>
+      <small>Source: ${match.docName} (chunk ${match.index + 1})</small>
+    `;
+
+    searchResults.appendChild(div);
+  });
+}
+
+// new 2026-01-12
+function highlightMatch(text) {
+  const snippetLength = 300;
+  return text.length > snippetLength
+    ? text.slice(0, snippetLength) + "…"
+    : text;
 }
 </script>
 
