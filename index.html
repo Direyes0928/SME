@@ -156,6 +156,7 @@
     <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#e5e7eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Load Documents</strong>
     <input type="file" id="fileInput" multiple />
     <p id="fileStatus">No files loaded.</p>
+    <p id="chunkStatus">No chunks created.</p>
     <ul id="fileList"></ul>
   </div>
 </section>
@@ -175,8 +176,10 @@
 const fileInput = document.getElementById("fileInput");
 const fileStatus = document.getElementById("fileStatus");
 const fileList = document.getElementById("fileList");
+const chunkStatus = document.getElementById("chunkStatus");
 
 const documents = []; // new 2026-01-12
+const chunks = []; // new 2026-01-12
 
 fileInput.addEventListener("change", async (event) => {
   const files = Array.from(event.target.files);
@@ -194,6 +197,8 @@ fileInput.addEventListener("change", async (event) => {
   }
 
   renderFileStatus();
+
+  chunkAllDocuments(); // new 2026-01-12
 });
 
 // new 2026-01-12
@@ -217,6 +222,46 @@ function renderFileStatus() {
     li.textContent = `${doc.name}`;
     fileList.appendChild(li);
   });
+}
+
+// new 2026-01-12
+const CHUNK_SIZE = 400;   // new 2026-01-12
+const CHUNK_OVERLAP = 50; // new 2026-01-12
+
+// new 2026-01-12
+function chunkAllDocuments() {
+  chunks.length = 0; // reset
+
+  documents.forEach(doc => {
+    const text = doc.text || "";
+    let start = 0;
+    let index = 0;
+
+    while (start < text.length) {
+      const end = Math.min(start + CHUNK_SIZE, text.length);
+      const chunkText = text.slice(start, end);
+
+      chunks.push({
+        id: crypto.randomUUID(),
+        docId: doc.id,
+        docName: doc.name,
+        index,
+        text: chunkText,
+        charStart: start,
+        charEnd: end
+      });
+
+      index++;
+      start += CHUNK_SIZE - CHUNK_OVERLAP;
+    }
+  });
+
+  renderChunkStatus();
+}
+
+// new 2026-01-12
+function renderChunkStatus() {
+  chunkStatus.textContent = `${chunks.length} chunk(s) created.`;
 }
 </script>
 
