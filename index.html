@@ -6,46 +6,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
+    :root {
+      --bg: #000000;
+      --text: #ffffff;
+      --card-bg: #111111;
+      --border: #333333;
+      --input-border: #555555;
+      --button-bg: #333333;
+      --button-hover: #555555;
+      --sidebar-bg: #111111;
+      --highlight: rgba(255, 255, 255, 0.25);
+      --focus-shadow: rgba(255, 255, 255, 0.3);
+    }
+
+    .light-mode {
+      --bg: #ffffff;
+      --text: #000000;
+      --card-bg: #f5f5f5;
+      --border: #cccccc;
+      --input-border: #aaaaaa;
+      --button-bg: #e0e0e0;
+      --button-hover: #cccccc;
+      --sidebar-bg: #f5f5f5;
+      --highlight: rgba(0, 0, 0, 0.25);
+      --focus-shadow: rgba(0, 0, 0, 0.3);
+    }
+
+    .light-mode svg path {
+      stroke: #000000;
+    }
+
     body {
       margin: 0;
       font-family: system-ui, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-      color: #e5e7eb;
+      background: var(--bg);
+      color: var(--text);
     }
 
     header {
       padding: 1rem;
       background: transparent;
-      border-bottom: 1px solid #1e293b;
+      border-bottom: 1px solid var(--border);
     }
 
     section {
       padding: 1rem;
-      border-bottom: 1px solid #1e293b;
+      border-bottom: 1px solid var(--border);
     }
 
     .card {
-      background: #020617;
+      background: var(--card-bg);
       padding: 1rem;
       border-radius: 12px;
       margin-bottom: 1rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0,255,255,0.05);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     input {
       width: 100%;
       padding: 0.75rem;
       border-radius: 8px;
-      border: 1px solid #374151;
-      background: #020617;
-      color: #e5e7eb;
+      border: 1px solid var(--input-border);
+      background: var(--card-bg);
+      color: var(--text);
       transition: border-color 0.3s ease;
     }
 
     input:focus {
       outline: none;
-      border-color: #60a5fa;
-      box-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+      border-color: var(--text);
+      box-shadow: 0 0 10px var(--focus-shadow);
     }
 
     .app {
@@ -55,14 +85,14 @@
 
     .sidebar {
       width: 250px;
-      background: #020617;
+      background: var(--sidebar-bg);
       padding: 1rem;
-      border-right: 1px solid #1e293b;
+      border-right: 1px solid var(--border);
     }
 
     .sidebar h3 {
       margin-top: 0;
-      color: #60a5fa;
+      color: var(--text);
     }
 
     .sidebar ul {
@@ -78,7 +108,7 @@
     }
 
     .sidebar li:hover {
-      background: #1e293b;
+      background: var(--border);
     }
 
     .main {
@@ -101,8 +131,8 @@
 
     .chat-section {
       padding: 1rem;
-      background: rgba(15, 23, 42, 0.9);
-      border-top: 1px solid #1e293b;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
     }
 
     @keyframes fadeIn {
@@ -116,10 +146,130 @@
 
     /* new 2026-01-12 */
     mark.evidence {
-      background: rgba(96, 165, 250, 0.25);
-      color: #e5e7eb;
+      background: var(--highlight);
+      color: var(--text);
       padding: 0 0.2em;
       border-radius: 4px;
+    }
+
+    /* new 2026-01-12 */
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--input-border);
+      background: var(--card-bg);
+      color: var(--text);
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 0.75rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: none;
+      background: var(--button-bg);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--button-hover);
+    }
+
+    #settingsPanel {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--button-bg);
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--text);
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--text);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+      background-color: var(--bg);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid var(--border);
+      width: 70%;
+      max-width: 400px;
+      text-align: center;
+      border-radius: 12px;
+    }
+
+    #fileList li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+
+    #fileList li button {
+      background: transparent;
+      color: #f87171;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    #fileList li button:hover {
+      color: #dc2626;
     }
   </style>
 </head>
@@ -128,12 +278,21 @@
 
 <div class="app">
 <aside class="sidebar">
-<h3>SME Agent</h3>
+<h3><img src="assets/nugget-logo.svg" alt="SME Agent" style="width: 50%; height: auto;" /></h3>
 <ul>
 <li>Dashboard</li>
 <li>History</li>
 <li>Settings</li>
 </ul>
+<button id="toggleNoteMode"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> New Note</button>
+<div id="settingsPanel" hidden>
+  <h4>Settings</h4>
+  <label class="toggle">
+    <input type="checkbox" id="themeToggle" />
+    <span class="slider"></span>
+  </label>
+  <span> Light Mode</span>
+</div>
 </aside>
 
 <div class="main">
@@ -145,14 +304,14 @@
 <div class="content">
 <section>
   <div class="card">
-    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="#e5e7eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</strong>
+    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</strong>
     <p>No upcoming events loaded.</p>
   </div>
 </section>
 
 <section>
   <div class="card">
-    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#e5e7eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Sources</strong>
+    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Sources</strong>
     <p>Notes: Not connected</p>
     <p>Documents: Not connected</p>
     <p>Calendar: Not connected</p>
@@ -161,18 +320,64 @@
 
 <section>
   <div class="card">
-    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#e5e7eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Load Documents</strong>
+    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Load Documents</strong>
     <input type="file" id="fileInput" multiple />
     <p id="fileStatus">No files loaded.</p>
-    <p id="chunkStatus">No chunks created.</p>
+    <p id="chunkStatus">No nuggets created.</p>
     <ul id="fileList"></ul>
   </div>
 </section>
+
+<section id="noteMode" hidden>
+  <div class="card">
+    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> New Note</strong>
+
+    <label>New Note</label>
+    <input id="noteTitle" placeholder="Intro to Policy – Exam Prep" />
+
+    <label>Tags (use #hashtags)</label>
+    <input id="noteTags" placeholder="#midterm #policy #examPrep" />
+
+    <label>Main Notes</label>
+    <textarea
+      id="noteMain"
+      rows="6"
+      placeholder="Write your main notes here..."
+    ></textarea>
+
+    <details>
+      <summary><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5V19M5 12H19" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Add Sections</summary>
+
+      <label>Key Concepts</label>
+      <textarea id="noteConcepts" rows="3"></textarea>
+
+      <label>Definitions</label>
+      <textarea id="noteDefinitions" rows="3"></textarea>
+
+      <label>Examples</label>
+      <textarea id="noteExamples" rows="3"></textarea>
+
+      <label>Open Questions</label>
+      <textarea id="noteQuestions" rows="3"></textarea>
+    </details>
+
+    <button id="saveNoteBtn">Save Note</button>
+  </div>
+</section>
+
+<!-- new 2026-01-12 -->
+<section>
+  <div class="card">
+    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Your Notes</strong>
+    <ul id="notesList"></ul>
+  </div>
+</section>
+
 </div>
 
-<section class="chat-section">
+<section id="askMode" class="chat-section">
   <div class="card">
-    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 3 19 11Z" stroke="#e5e7eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Ask Your SME</strong>
+    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 3 19 11Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Ask Your SME</strong>
     <input
       type="text"
       id="searchInput"
@@ -184,6 +389,13 @@
 </div>
 </div>
 
+<div id="noResultsModal" class="modal">
+  <div class="modal-content">
+    <img src="assets/no-nuggets.svg" alt="No nuggets found" style="width: 100%; height: auto;" />
+    <button id="closeModal">Close</button>
+  </div>
+</div>
+
 <script>
 // new 2026-01-12
 const fileInput = document.getElementById("fileInput");
@@ -193,6 +405,69 @@ const chunkStatus = document.getElementById("chunkStatus");
 
 const documents = []; // new 2026-01-12
 const chunks = []; // new 2026-01-12
+let appMode = "ask"; // "ask" | "note"
+
+// new 2026-01-12
+let editingNoteId = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("SME_DB", 1);
+
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+
+      if (!db.objectStoreNames.contains("documents")) {
+        db.createObjectStore("documents", { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains("notes")) {
+        db.createObjectStore("notes", { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains("chunks")) {
+        db.createObjectStore("chunks", { keyPath: "id" });
+      }
+    };
+
+    request.onsuccess = () => {
+      db = request.result;
+      resolve(db);
+    };
+
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// new 2026-01-12
+function saveToStore(storeName, value) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    tx.objectStore(storeName).put(value);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// new 2026-01-12
+function deleteFromStore(storeName, key) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    tx.objectStore(storeName).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// new 2026-01-12
+function loadAllFromStore(storeName) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readonly");
+    const request = tx.objectStore(storeName).getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
 
 fileInput.addEventListener("change", async (event) => {
   const files = Array.from(event.target.files);
@@ -207,6 +482,9 @@ fileInput.addEventListener("change", async (event) => {
       text,
       loadedAt: new Date().toISOString()
     });
+
+    // new 2026-01-12
+    await saveToStore("documents", documents[documents.length - 1]);
   }
 
   renderFileStatus();
@@ -232,7 +510,27 @@ function renderFileStatus() {
 
   documents.forEach(doc => {
     const li = document.createElement("li");
-    li.textContent = `${doc.name}`;
+    li.style.display = "flex";
+    li.style.justifyContent = "space-between";
+    li.style.alignItems = "center";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = doc.name;
+
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "🗑️";
+    delBtn.style.background = "transparent";
+    delBtn.style.color = "#f87171";
+    delBtn.style.cursor = "pointer";
+
+    delBtn.addEventListener("click", () => {
+      if (confirm(`Delete "${doc.name}"? This cannot be undone.`)) {
+        deleteDocument(doc.id);
+      }
+    });
+
+    li.appendChild(nameSpan);
+    li.appendChild(delBtn);
     fileList.appendChild(li);
   });
 }
@@ -242,10 +540,10 @@ const CHUNK_SIZE = 400;   // new 2026-01-12
 const CHUNK_OVERLAP = 50; // new 2026-01-12
 
 // new 2026-01-12
-function chunkAllDocuments() {
+async function chunkAllDocuments() {
   chunks.length = 0; // reset
 
-  documents.forEach(doc => {
+  for (const doc of documents) {
     const text = doc.text || "";
     let start = 0;
     let index = 0;
@@ -254,7 +552,7 @@ function chunkAllDocuments() {
       const end = Math.min(start + CHUNK_SIZE, text.length);
       const chunkText = text.slice(start, end);
 
-      chunks.push({
+      const chunk = {
         id: crypto.randomUUID(),
         docId: doc.id,
         docName: doc.name,
@@ -262,19 +560,99 @@ function chunkAllDocuments() {
         text: chunkText,
         charStart: start,
         charEnd: end
-      });
+      };
+
+      chunks.push(chunk);
+
+      // ✅ await is now legal
+      await saveToStore("chunks", chunk);
 
       index++;
       start += CHUNK_SIZE - CHUNK_OVERLAP;
     }
-  });
+  }
 
   renderChunkStatus();
 }
 
 // new 2026-01-12
 function renderChunkStatus() {
-  chunkStatus.textContent = `${chunks.length} chunk(s) created.`;
+  chunkStatus.textContent = `${chunks.length} nugget(s) created.`;
+}
+
+// new 2026-01-12
+function renderNotesList(notes) {
+  const ul = document.getElementById("notesList");
+  ul.innerHTML = "";
+
+  notes.forEach(note => {
+    const li = document.createElement("li");
+    li.style.display = "flex";
+    li.style.justifyContent = "space-between";
+
+    const title = document.createElement("span");
+    title.textContent = note.title;
+    title.style.cursor = "pointer";
+
+    title.addEventListener("click", () => loadNoteForEdit(note));
+
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "🗑️";
+    delBtn.style.color = "#f87171";
+    delBtn.style.background = "transparent";
+
+    delBtn.onclick = async () => {
+      if (confirm(`Delete note "${note.title}"?`)) {
+        await deleteNote(note.id);
+      }
+    };
+
+    li.appendChild(title);
+    li.appendChild(delBtn);
+    ul.appendChild(li);
+  });
+}
+
+// new 2026-01-12
+async function deleteDocument(docId) {
+  // remove from memory
+  const docIndex = documents.findIndex(d => d.id === docId);
+  if (docIndex === -1) return;
+
+  const doc = documents[docIndex];
+  documents.splice(docIndex, 1);
+
+  // remove document from DB
+  await deleteFromStore("documents", docId);
+
+  // remove chunks tied to this document
+  const chunksToDelete = chunks.filter(c => c.docId === docId);
+  for (const chunk of chunksToDelete) {
+    await deleteFromStore("chunks", chunk.id);
+  }
+
+  // remove chunks from memory
+  for (let i = chunks.length - 1; i >= 0; i--) {
+    if (chunks[i].docId === docId) {
+      chunks.splice(i, 1);
+    }
+  }
+
+  renderFileStatus();
+  renderChunkStatus();
+  searchResults.innerHTML = "";
+
+  // new 2026-01-12
+  if (documents.length === 0) {
+    // Clear all chunks if no documents remain
+    const allChunks = await loadAllFromStore("chunks");
+    for (const chunk of allChunks) {
+      await deleteFromStore("chunks", chunk.id);
+    }
+    chunks.length = 0;
+  }
+
+  renderChunkStatus();
 }
 
 // new 2026-01-12
@@ -282,10 +660,28 @@ const searchInput = document.getElementById("searchInput");
 const searchResults = document.getElementById("searchResults");
 
 // new 2026-01-12
+const noteSection = document.getElementById("noteMode");
+const askSection = document.getElementById("askMode");
+const toggleBtn = document.getElementById("toggleNoteMode");
+
+// new 2026-01-12
 searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     runSearch(searchInput.value);
   }
+});
+
+// new 2026-01-12
+toggleBtn.addEventListener("click", () => {
+  if (appMode === "ask") editingNoteId = null;
+
+  appMode = appMode === "ask" ? "note" : "ask";
+
+  noteSection.hidden = appMode !== "note";
+  askSection.hidden = appMode !== "ask";
+
+  toggleBtn.innerHTML =
+    appMode === "note" ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Close Note' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> New Note';
 });
 
 // new 2026-01-12
@@ -318,6 +714,11 @@ function runSearch(query) {
       chunk.text.toLowerCase().includes(term)
     )
   );
+
+  if (matches.length === 0) {
+    document.getElementById('noResultsModal').style.display = 'block';
+    return;
+  }
 
   renderSearchResults(matches, terms); // <-- pass terms
 }
@@ -432,6 +833,247 @@ function highlightMatch(text) {
     ? text.slice(0, snippetLength) + "…"
     : text;
 }
+
+// new 2026-01-12
+const saveNoteBtn = document.getElementById("saveNoteBtn");
+
+// modified 2026-01-12
+saveNoteBtn.addEventListener("click", async () => {
+  const title = document.getElementById("noteTitle").value.trim();
+  const tagsRaw = document.getElementById("noteTags").value;
+  const main = document.getElementById("noteMain").value;
+
+  if (!title || !main) {
+    alert("Title and Main Notes are required.");
+    return;
+  }
+
+  const tags = tagsRaw
+    .split(/\s+/)
+    .filter(t => t.startsWith("#"))
+    .map(t => t.replace("#", "").toLowerCase());
+
+  const note = {
+    id: editingNoteId ?? crypto.randomUUID(),
+    type: "note",
+    title,
+    tags,
+    sections: {
+      main,
+      concepts: document.getElementById("noteConcepts").value,
+      definitions: document.getElementById("noteDefinitions").value,
+      examples: document.getElementById("noteExamples").value,
+      questions: document.getElementById("noteQuestions").value
+    },
+    createdAt: editingNoteId ? undefined : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  await saveToStore("notes", note);
+
+  await upsertNoteDocument(note);
+
+  editingNoteId = null;
+  clearNoteForm();
+});
+
+// new 2026-01-12
+function ingestNoteAsDocument(note) {
+  const fullText = `
+Title: ${note.title}
+
+Tags: ${note.tags.map( t => "#" + t ).join(" ")}
+
+Main Notes:
+${note.sections.main}
+
+Key Concepts:
+${note.sections.concepts}
+
+Definitions:
+${note.sections.definitions}
+
+Examples:
+${note.sections.examples}
+
+Open Questions:
+${note.sections.questions}
+`;
+
+  documents.push({
+    id: note.id,
+    name: `NOTE: ${note.title}`,
+    type: "note",
+    text: fullText,
+    tags: note.tags,
+    loadedAt: note.createdAt
+  });
+
+  renderFileStatus();
+  chunkAllDocuments();
+}
+
+// new 2026-01-12
+async function upsertNoteDocument(note) {
+  // delete old chunks
+  for (let i = chunks.length - 1; i >= 0; i--) {
+    if (chunks[i].docId === note.id) {
+      await deleteFromStore("chunks", chunks[i].id);
+      chunks.splice(i, 1);
+    }
+  }
+
+  const fullText = `
+Title: ${note.title}
+
+Tags: ${note.tags.map(t => "#" + t).join(" ")}
+
+Main Notes:
+${note.sections.main}
+
+Key Concepts:
+${note.sections.concepts}
+
+Definitions:
+${note.sections.definitions}
+
+Examples:
+${note.sections.examples}
+
+Open Questions:
+${note.sections.questions}
+`;
+
+  const doc = {
+    id: note.id,
+    name: `NOTE: ${note.title}`,
+    type: "note",
+    text: fullText,
+    tags: note.tags,
+    loadedAt: note.updatedAt
+  };
+
+  await saveToStore("documents", doc);
+
+  const existingDocIndex = documents.findIndex(d => d.id === doc.id);
+  if (existingDocIndex >= 0) {
+    documents[existingDocIndex] = doc;
+  } else {
+    documents.push(doc);
+  }
+
+  await chunkAllDocuments();
+  renderFileStatus();
+}
+
+// new 2026-01-12
+async function deleteNote(noteId) {
+  // remove from DB
+  await deleteFromStore("notes", noteId);
+
+  // remove document and chunks
+  await deleteDocument(noteId);
+
+  // reload notes list
+  const notes = await loadAllFromStore("notes");
+  renderNotesList(notes);
+}
+
+// new 2026-01-12
+function clearNoteForm() {
+  [
+    "noteTitle",
+    "noteTags",
+    "noteMain",
+    "noteConcepts",
+    "noteDefinitions",
+    "noteExamples",
+    "noteQuestions"
+  ].forEach(id => document.getElementById(id).value = "");
+}
+
+// new 2026-01-12
+function loadNoteForEdit(note) {
+  editingNoteId = note.id;
+
+  document.getElementById("noteTitle").value = note.title;
+  document.getElementById("noteTags").value =
+    note.tags.map(t => "#" + t).join(" ");
+  document.getElementById("noteMain").value = note.sections.main;
+  document.getElementById("noteConcepts").value = note.sections.concepts;
+  document.getElementById("noteDefinitions").value = note.sections.definitions;
+  document.getElementById("noteExamples").value = note.sections.examples;
+  document.getElementById("noteQuestions").value = note.sections.questions;
+
+  noteSection.hidden = false;
+  askSection.hidden = true;
+  toggleBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Close Note';
+}
+
+// new 2026-01-12
+window.addEventListener("DOMContentLoaded", async () => {
+  await openDB();
+
+  const savedDocs = await loadAllFromStore("documents");
+  const savedNotes = await loadAllFromStore("notes");
+  const savedChunks = await loadAllFromStore("chunks");
+
+  documents.push(...savedDocs);
+  chunks.push(...savedChunks);
+
+  // new 2026-01-12
+  if (documents.length === 0 && chunks.length > 0) {
+    console.warn("Orphaned chunks detected — clearing");
+    chunks.length = 0;
+
+    const storedChunks = await loadAllFromStore("chunks");
+    for (const chunk of storedChunks) {
+      await deleteFromStore("chunks", chunk.id);
+    }
+  }
+
+  // Re-ingest notes if needed
+  savedNotes.forEach(note => {
+    if (!documents.find(d => d.id === note.id)) {
+      ingestNoteAsDocument(note);
+    }
+  });
+
+  renderNotesList(savedNotes);
+  renderFileStatus();
+  renderChunkStatus();
+
+  // Settings functionality
+  const settingsLi = document.querySelector('.sidebar li:nth-child(3)'); // Settings
+  const settingsPanel = document.getElementById('settingsPanel');
+  const themeToggle = document.getElementById('themeToggle');
+
+  settingsLi.addEventListener('click', () => {
+    settingsPanel.hidden = !settingsPanel.hidden;
+  });
+
+  // Load theme preference
+  const isLightMode = localStorage.getItem('lightMode') === 'true';
+  if (isLightMode) {
+    document.body.classList.add('light-mode');
+    themeToggle.checked = true;
+  }
+
+  themeToggle.addEventListener('change', () => {
+    if (themeToggle.checked) {
+      document.body.classList.add('light-mode');
+      localStorage.setItem('lightMode', 'true');
+    } else {
+      document.body.classList.remove('light-mode');
+      localStorage.setItem('lightMode', 'false');
+    }
+  });
+
+  // Modal close
+  document.getElementById('closeModal').addEventListener('click', () => {
+    document.getElementById('noResultsModal').style.display = 'none';
+  });
+});
 </script>
 
 </body>

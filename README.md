@@ -27,6 +27,16 @@ SME Agent reconnects:
 
 ---
 
+
+##  Philosophy 
+
+SME does not search the internet.
+SME does not guess.
+SME only answers from what you provide.
+If it doesn’t know, it tells you.
+
+
+
 ##  Core Features (Planned)
 
 - Connect to user-approved sources:
