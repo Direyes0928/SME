@@ -113,6 +113,14 @@
     .card {
       animation: fadeIn 0.5s ease-out;
     }
+
+    /* new 2026-01-12 */
+    mark.evidence {
+      background: rgba(96, 165, 250, 0.25);
+      color: #e5e7eb;
+      padding: 0 0.2em;
+      border-radius: 4px;
+    }
   </style>
 </head>
 
@@ -311,7 +319,7 @@ function runSearch(query) {
     )
   );
 
-  renderSearchResults(matches);
+  renderSearchResults(matches, terms); // <-- pass terms
 }
 
 // new 2026-01-12
@@ -340,9 +348,10 @@ function synthesizeAnswer(matches) {
   let sources = [];
 
   ordered.forEach(match => {
-    answerParts.push(
-      extractKeySentences(match.text)
-    );
+    answerParts.push({
+      text: extractKeySentences(match.text),
+      chunk: match
+    });
 
     sources.push(
       `${match.docName} (chunk ${match.index + 1})`
@@ -350,13 +359,28 @@ function synthesizeAnswer(matches) {
   });
 
   return {
-    answer: answerParts.join(" "),
+    parts: answerParts,
     sources: [...new Set(sources)]
   };
 }
 
 // new 2026-01-12
-function renderSearchResults(matches) {
+function highlightTerms(text, terms) {
+  let highlighted = text;
+
+  terms.forEach(term => {
+    const regex = new RegExp(`(${term})`, "gi");
+    highlighted = highlighted.replace(
+      regex,
+      `<mark class="evidence">$1</mark>`
+    );
+  });
+
+  return highlighted;
+}
+
+// new 2026-01-12
+function renderSearchResults(matches, terms) {
   searchResults.innerHTML = "";
 
   if (matches.length === 0) {
@@ -365,22 +389,40 @@ function renderSearchResults(matches) {
   }
 
   const synthesized = synthesizeAnswer(matches);
-
-  if (!synthesized) {
-    searchResults.innerHTML = "<p>No matching content found.</p>";
-    return;
-  }
+  if (!synthesized) return;
 
   const answerCard = document.createElement("div");
   answerCard.className = "card";
-  answerCard.style.marginTop = "0.5rem";
+
+  let answerHTML = synthesized.parts.map(part =>
+    `<p>${highlightTerms(part.text, terms)}</p>`
+  ).join("");
+
+  let sourcesHTML = synthesized.parts.map(part =>
+    `<a href="#" data-chunk-id="${part.chunk.id}" class="source-link">
+      ${part.chunk.docName} (chunk ${part.chunk.index + 1})
+    </a>`
+  ).join("<br>");
 
   answerCard.innerHTML = `
-    <p>${synthesized.answer}</p>
-    <small><strong>Sources:</strong><br>${synthesized.sources.join("<br>")}</small>
+    ${answerHTML}
+    <hr>
+    <small><strong>Sources:</strong><br>${sourcesHTML}</small>
   `;
 
   searchResults.appendChild(answerCard);
+
+  wireSourceLinks();
+}
+
+// new 2026-01-12
+function wireSourceLinks() {
+  document.querySelectorAll(".source-link").forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      alert("Chunk navigation coming next — this source was used.");
+    });
+  });
 }
 
 // new 2026-01-12
