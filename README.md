@@ -1,6 +1,6 @@
-# SME AGENT (PERSONAL CONTEXT ASSISTANT)
+# Nugget AGENT
 
-SME Agent is a **personal, source-aware assistant** that helps users understand, recall, and act on *their own information* — notes, documents, and calendar events — without training on the open internet.
+NUgget Agent is a **personal, source-aware assistant** that helps users understand, recall, and act on *their own information* — notes, documents, and calendar events — without training on the open internet.
 
 This is not a general-purpose chatbot.
 This is a **private Subject Matter Expert (SME)** that only knows what you allow it to know.
@@ -18,7 +18,7 @@ People already write:
 
 But that information becomes **fragmented and forgotten**.
 
-SME Agent reconnects:
+Nugget Agent reconnects:
 - Your documents  
 - Your calendar  
 - Your past notes  
