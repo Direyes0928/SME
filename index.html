@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SME Agent</title>
+  <title>Nugget</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -244,13 +244,15 @@
 
     .modal-content {
       background: var(--card-bg);
-      margin: 15% auto;
+      margin: 5% auto;
       padding: 20px;
       border: 1px solid var(--border);
-      width: 70%;
-      max-width: 400px;
+      width: 90%;
+      max-width: 800px;
       text-align: center;
       border-radius: 12px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     #fileList li {
@@ -271,6 +273,65 @@
     #fileList li button:hover {
       color: #dc2626;
     }
+
+    .note-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+
+    .note-btn svg {
+      stroke: var(--text);
+    }
+
+    .delete-btn svg {
+      stroke: #f87171;
+    }
+
+    .doc-details {
+      margin-left: 1em;
+      margin-top: 0.5em;
+    }
+
+    .calendar-day {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+      line-height: 30px;
+      margin: 2px;
+    }
+
+    .calendar-day:hover {
+      background: var(--highlight);
+    }
+
+    .calendar-day.has-notes {
+      background: var(--button-bg);
+      font-weight: bold;
+    }
+
+    .calendar-day.today {
+      border: 2px solid var(--text);
+    }
+
+    .calendar-note {
+      margin: 0.5rem 0;
+    }
+
+    .calendar-note a {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .calendar-note a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 
@@ -278,7 +339,12 @@
 
 <div class="app">
 <aside class="sidebar">
-<h3><img src="assets/nugget-logo.svg" alt="SME Agent" style="width: 50%; height: auto;" /></h3>
+<h3>
+  <div style="display: inline-flex; align-items: center;">
+    <img src="assets/nugget logo.png" width="40" height="40" alt="Nugget Logo">
+    <span style="color: black; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 18px; margin-left: 8px;">Nugget</span>
+  </div>
+</h3>
 <ul>
 <li>Dashboard</li>
 <li>History</li>
@@ -287,29 +353,50 @@
 <button id="toggleNoteMode"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> New Note</button>
 <div id="settingsPanel" hidden>
   <h4>Settings</h4>
+  <h5>User Profile</h5>
+  <label>Name:</label>
+  <input id="profileName" placeholder="Your Name" />
+  <label>Email:</label>
+  <input id="profileEmail" type="email" placeholder="your@email.com" />
+  <label>Bio:</label>
+  <textarea id="profileBio" rows="2" placeholder="Short bio..."></textarea>
+  <button id="saveProfileBtn">Save Profile</button>
+  <hr>
   <label class="toggle">
     <input type="checkbox" id="themeToggle" />
     <span class="slider"></span>
   </label>
   <span> Light Mode</span>
 </div>
+<div id="historyPanel" hidden>
+  <h4>Search History</h4>
+  <div id="historyList"></div>
+  <hr>
+  <h5>Clear History</h5>
+  <button id="clearLastHour">Clear last 1 hour</button>
+  <button id="clearLastDay">Clear last 24 hours</button>
+  <button id="clearLastWeek">Clear last week</button>
+  <button id="clearAll">Clear all</button>
+</div>
 </aside>
 
 <div class="main">
 <header>
-  <h2>Dashboard</h2>
+  <h2 id="dashboardTitle">Dashboard</h2>
   <small>Your personal context assistant</small>
 </header>
 
 <div class="content">
-<section>
-  <div class="card">
-    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</strong>
-    <p>No upcoming events loaded.</p>
+<section id="calendarSection">
+  <div class="card" id="openCalendar">
+    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</strong>
+    <p id="todaySummary"></p>
+    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Upcoming</strong>
+    <p id="upcomingSummary"></p>
   </div>
 </section>
 
-<section>
+<section id="sourcesSection">
   <div class="card">
     <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Sources</strong>
     <p>Notes: Not connected</p>
@@ -318,7 +405,7 @@
   </div>
 </section>
 
-<section>
+<section id="loadDocsSection">
   <div class="card">
     <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Load Documents</strong>
     <input type="file" id="fileInput" multiple />
@@ -334,6 +421,12 @@
 
     <label>New Note</label>
     <input id="noteTitle" placeholder="Intro to Policy – Exam Prep" />
+
+    <label>Associated Date (optional)</label>
+    <input type="date" id="noteDate" />
+
+    <label>Associated Time (optional)</label>
+    <input type="time" id="noteTime" />
 
     <label>Tags (use #hashtags)</label>
     <input id="noteTags" placeholder="#midterm #policy #examPrep" />
@@ -366,7 +459,7 @@
 </section>
 
 <!-- new 2026-01-12 -->
-<section>
+<section id="yourNotesSection">
   <div class="card">
     <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Your Notes</strong>
     <ul id="notesList"></ul>
@@ -391,8 +484,79 @@
 
 <div id="noResultsModal" class="modal">
   <div class="modal-content">
-    <img src="assets/no-nuggets.svg" alt="No nuggets found" style="width: 100%; height: auto;" />
+    <div style="text-align: center;">
+      <div style="background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 50px; padding: 12px 24px; display: inline-flex; align-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-bottom: 1rem;">
+        <svg width="40" height="40" viewBox="0 0 50 50">
+          <path d="M10 20 Q10 10 20 10 L30 10 Q40 10 40 20 L40 30 Q40 40 30 40 L20 40 Q10 40 10 30 Z" fill="white" stroke="#FFA500" stroke-width="1"/>
+        </svg>
+        <span style="color: black; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 22px; margin-left: 12px;">No nuggets found</span>
+      </div>
+    </div>
     <button id="closeModal">Close</button>
+  </div>
+</div>
+
+<div id="noteViewModal" class="modal">
+  <div class="modal-content">
+    <h3 id="viewNoteTitle"></h3>
+    <p><strong>Tags:</strong> <span id="viewNoteTags"></span></p>
+    <p><strong>Date:</strong> <span id="viewNoteDate"></span></p>
+    <p><strong>Time:</strong> <span id="viewNoteTime"></span></p>
+    <p><strong>Created:</strong> <span id="viewNoteCreated"></span></p>
+    <p><strong>Updated:</strong> <span id="viewNoteUpdated"></span></p>
+    <div id="viewNoteContent"></div>
+    <button id="editFromViewBtn">Edit</button>
+    <button id="deleteFromViewBtn">Delete</button>
+    <button id="closeViewModal">Close</button>
+  </div>
+</div>
+
+<!-- new 2026-01-13 -->
+<div id="chunkViewModal" class="modal">
+  <div class="modal-content">
+    <h3 id="chunkDocTitle"></h3>
+    <p><strong>Chunk:</strong> <span id="chunkIndex"></span></p>
+    <hr>
+    <div id="chunkText" style="text-align:left; white-space:pre-wrap;"></div>
+    <br>
+    <button id="closeChunkModal">Close</button>
+  </div>
+</div>
+
+<div id="docViewModal" class="modal">
+  <div class="modal-content">
+    <h3 id="docViewTitle"></h3>
+    <pre id="docViewContent" style="text-align:left; white-space:pre-wrap;"></pre>
+    <button id="closeDocModal">Close</button>
+  </div>
+</div>
+
+<div id="deleteConfirmModal" class="modal">
+  <div class="modal-content">
+    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+      <div style="display: inline-flex; align-items: center;">
+        <img src="assets/nugget logo.png" width="64" height="64" alt="Nugget Logo">
+        <span style="color: black; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 20px; margin-left: 8px;">Nugget</span>
+      </div>
+    </div>
+    <p id="deleteConfirmMessage">Are you sure you want to delete?</p>
+    <button id="deleteConfirmYes">Yes</button>
+    <button id="deleteConfirmNo">No</button>
+  </div>
+</div>
+
+<!-- new 2026-01-14 -->
+<div id="calendarModal" class="modal">
+  <div class="modal-content">
+    <h3 id="calendarTitle"></h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <button id="prevMonth" style="font-size: 1.5rem; padding: 0.5rem;">&lt;</button>
+      <button id="nextMonth" style="font-size: 1.5rem; padding: 0.5rem;">&gt;</button>
+    </div>
+    <div id="calendarGrid"></div>
+    <hr>
+    <div id="calendarDaySummary"></div>
+    <button id="closeCalendar">Close</button>
   </div>
 </div>
 
@@ -409,6 +573,19 @@ let appMode = "ask"; // "ask" | "note"
 
 // new 2026-01-12
 let editingNoteId = null;
+
+// new 2026-01-12
+let currentViewingNote = null;
+
+// new 2026-01-14
+let notes = [];
+
+// Search history
+let searchHistory = [];
+
+// Calendar navigation
+let currentCalendarYear;
+let currentCalendarMonth;
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -510,27 +687,46 @@ function renderFileStatus() {
 
   documents.forEach(doc => {
     const li = document.createElement("li");
-    li.style.display = "flex";
-    li.style.justifyContent = "space-between";
-    li.style.alignItems = "center";
+    li.style.display = "block";
 
-    const nameSpan = document.createElement("span");
-    nameSpan.textContent = doc.name;
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = doc.name;
+    summary.style.cursor = "pointer";
+    details.appendChild(summary);
+
+    const detailsDiv = document.createElement("div");
+    detailsDiv.className = "doc-details";
+
+    const nuggetCount = chunks.filter(c => c.docId === doc.id).length;
+    const tagsStr = doc.tags && doc.tags.length ? doc.tags.map(t => '#' + t).join(' ') : 'None';
+    const preview = doc.text.slice(0, 200) + (doc.text.length > 200 ? '...' : '');
+
+    detailsDiv.innerHTML = `
+      Type: ${doc.type}<br>
+      Nuggets: ${nuggetCount}<br>
+      Tags: ${tagsStr}<br>
+      <div style="opacity: 0.6;">${preview}</div>
+    `;
+
+    const viewBtn = document.createElement("button");
+    viewBtn.textContent = "View";
+    viewBtn.onclick = () => showDocViewModal(doc);
 
     const delBtn = document.createElement("button");
-    delBtn.textContent = "🗑️";
-    delBtn.style.background = "transparent";
-    delBtn.style.color = "#f87171";
-    delBtn.style.cursor = "pointer";
+    delBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+    delBtn.className = "note-btn delete-btn";
+    delBtn.onclick = () => {
+      showDeleteConfirmModal(`Delete "${doc.name}"? This cannot be undone.`, async () => {
+        await deleteDocument(doc.id);
+      });
+    };
 
-    delBtn.addEventListener("click", () => {
-      if (confirm(`Delete "${doc.name}"? This cannot be undone.`)) {
-        deleteDocument(doc.id);
-      }
-    });
+    detailsDiv.appendChild(viewBtn);
+    detailsDiv.appendChild(delBtn);
 
-    li.appendChild(nameSpan);
-    li.appendChild(delBtn);
+    details.appendChild(detailsDiv);
+    li.appendChild(details);
     fileList.appendChild(li);
   });
 }
@@ -589,28 +785,151 @@ function renderNotesList(notes) {
     const li = document.createElement("li");
     li.style.display = "flex";
     li.style.justifyContent = "space-between";
+    li.style.alignItems = "center";
 
-    const title = document.createElement("span");
-    title.textContent = note.title;
-    title.style.cursor = "pointer";
+    const titleSpan = document.createElement("span");
+    titleSpan.textContent = note.title;
 
-    title.addEventListener("click", () => loadNoteForEdit(note));
+    const dateSpan = document.createElement("span");
+    dateSpan.textContent = note.date ? ` (${note.date})` : '';
+    dateSpan.style.fontSize = '0.8em';
+    dateSpan.style.opacity = '0.7';
+    dateSpan.style.marginLeft = '0.5em';
+
+    const buttonContainer = document.createElement("div");
+
+    const viewBtn = document.createElement("button");
+    viewBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    viewBtn.className = "note-btn";
+    viewBtn.onclick = () => showNoteViewModal(note);
+
+    const editBtn = document.createElement("button");
+    editBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+    editBtn.className = "note-btn";
+    editBtn.onclick = () => loadNoteForEdit(note);
 
     const delBtn = document.createElement("button");
-    delBtn.textContent = "🗑️";
-    delBtn.style.color = "#f87171";
-    delBtn.style.background = "transparent";
-
-    delBtn.onclick = async () => {
-      if (confirm(`Delete note "${note.title}"?`)) {
+    delBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+    delBtn.className = "note-btn delete-btn";
+    delBtn.onclick = () => {
+      showDeleteConfirmModal(`Delete note "${note.title}"?`, async () => {
         await deleteNote(note.id);
-      }
+      });
     };
 
-    li.appendChild(title);
-    li.appendChild(delBtn);
+    buttonContainer.appendChild(viewBtn);
+    buttonContainer.appendChild(editBtn);
+    buttonContainer.appendChild(delBtn);
+
+    li.appendChild(titleSpan);
+    li.appendChild(dateSpan);
+    li.appendChild(buttonContainer);
     ul.appendChild(li);
   });
+}
+
+// new 2026-01-14
+function getUpcomingNotes(notes) {
+  const upcoming = notes.filter(note => {
+    // explicit future date within 7 days
+    if (note.date && isWithinDays(note.date, 7)) return true;
+
+    // detected inline dates within 7 days
+    if (note.detectedDates && note.detectedDates.length > 0) {
+      return note.detectedDates.some(d => {
+        if (d.includes("-")) {
+          return isWithinDays(d, 7);
+        }
+        return false;
+      });
+    }
+
+    return false;
+  });
+
+  // Sort by date
+  return upcoming.sort((a, b) => {
+    const dateA = a.date || (a.detectedDates && a.detectedDates.find(d => d.includes("-")));
+    const dateB = b.date || (b.detectedDates && b.detectedDates.find(d => d.includes("-")));
+    return new Date(dateA) - new Date(dateB);
+  });
+}
+
+// new 2026-01-14
+function isWithinDays(dateStr, days) {
+  const today = new Date();
+  const target = new Date(dateStr);
+  const diffTime = target - today;
+  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  return diffDays >= 0 && diffDays <= days;
+}
+
+function renderTodayCard(notes) {
+  const today = new Date().toISOString().split("T")[0];
+
+  const todaysNotes = notes.filter(note => {
+    // 1️⃣ Explicit date always wins
+    if (note.date === today) return true;
+
+    // 2️⃣ Fallback: detected inline dates
+    if (note.detectedDates && note.detectedDates.length > 0) {
+      return note.detectedDates.some(d => {
+        // normalize detected formats
+        if (d.includes("-")) return d === today;
+        return false;
+      });
+    }
+
+    return false;
+  });
+
+  const todayP = document.getElementById("todaySummary");
+
+  if (todaysNotes.length > 0) {
+    todayP.innerHTML = todaysNotes
+      .map(n => `• ${n.title}`)
+      .join("<br>");
+  } else {
+    todayP.textContent = "No notes for today.";
+  }
+}
+
+// new 2026-01-14
+function renderUpcomingCard(notes) {
+  const upcoming = getUpcomingNotes(notes);
+  const upcomingP = document.getElementById("upcomingSummary");
+
+  if (upcoming.length > 0) {
+    upcomingP.innerHTML = upcoming
+      .map(n => {
+        const date = n.date || (n.detectedDates && n.detectedDates.find(d => d.includes("-")));
+        return `• ${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${n.title}`;
+      })
+      .join("<br>");
+  } else {
+    upcomingP.textContent = "No upcoming notes.";
+  }
+}
+
+// new 2026-01-12
+function showNoteViewModal(note) {
+  currentViewingNote = note;
+  document.getElementById('viewNoteTitle').textContent = note.title;
+  document.getElementById('viewNoteTags').textContent = note.tags.map(t => '#' + t).join(' ');
+  document.getElementById('viewNoteDate').textContent = note.date || 'None';
+  document.getElementById('viewNoteTime').textContent = note.time || 'None';
+  document.getElementById('viewNoteCreated').textContent = new Date(note.createdAt).toLocaleDateString();
+  document.getElementById('viewNoteUpdated').textContent = new Date(note.updatedAt).toLocaleDateString();
+  const contentDiv = document.getElementById('viewNoteContent');
+  contentDiv.innerHTML = `
+    <p><strong>Main Notes:</strong></p>
+    <p>${note.sections.main.replace(/\n/g, '<br>')}</p>
+    ${note.sections.concepts ? `<p><strong>Key Concepts:</strong></p><p>${note.sections.concepts.replace(/\n/g, '<br>')}</p>` : ''}
+    ${note.sections.definitions ? `<p><strong>Definitions:</strong></p><p>${note.sections.definitions.replace(/\n/g, '<br>')}</p>` : ''}
+    ${note.sections.examples ? `<p><strong>Examples:</strong></p><p>${note.sections.examples.replace(/\n/g, '<br>')}</p>` : ''}
+    ${note.sections.questions ? `<p><strong>Open Questions:</strong></p><p>${note.sections.questions.replace(/\n/g, '<br>')}</p>` : ''}
+  `;
+  document.getElementById('noteViewModal').style.display = 'block';
 }
 
 // new 2026-01-12
@@ -664,6 +983,12 @@ const noteSection = document.getElementById("noteMode");
 const askSection = document.getElementById("askMode");
 const toggleBtn = document.getElementById("toggleNoteMode");
 
+// Sections to hide in note mode
+const calendarSection = document.getElementById("calendarSection");
+const sourcesSection = document.getElementById("sourcesSection");
+const loadDocsSection = document.getElementById("loadDocsSection");
+const yourNotesSection = document.getElementById("yourNotesSection");
+
 // new 2026-01-12
 searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
@@ -679,6 +1004,19 @@ toggleBtn.addEventListener("click", () => {
 
   noteSection.hidden = appMode !== "note";
   askSection.hidden = appMode !== "ask";
+
+  // Hide/show dashboard sections based on mode
+  if (appMode === "note") {
+    calendarSection.hidden = true;
+    sourcesSection.hidden = true;
+    loadDocsSection.hidden = true;
+    yourNotesSection.hidden = true;
+  } else {
+    calendarSection.hidden = false;
+    sourcesSection.hidden = false;
+    loadDocsSection.hidden = false;
+    yourNotesSection.hidden = false;
+  }
 
   toggleBtn.innerHTML =
     appMode === "note" ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Close Note' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> New Note';
@@ -721,6 +1059,9 @@ function runSearch(query) {
   }
 
   renderSearchResults(matches, terms); // <-- pass terms
+
+  // Save to history
+  saveSearchToHistory(query);
 }
 
 // new 2026-01-12
@@ -821,17 +1162,223 @@ function wireSourceLinks() {
   document.querySelectorAll(".source-link").forEach(link => {
     link.addEventListener("click", e => {
       e.preventDefault();
-      alert("Chunk navigation coming next — this source was used.");
+
+      const chunkId = link.dataset.chunkId;
+      const chunk = chunks.find(c => c.id === chunkId);
+      if (!chunk) return;
+
+      showChunkModal(chunk);
     });
   });
 }
 
-// new 2026-01-12
-function highlightMatch(text) {
-  const snippetLength = 300;
-  return text.length > snippetLength
-    ? text.slice(0, snippetLength) + "…"
-    : text;
+// new 2026-01-13
+function showChunkModal(chunk) {
+  document.getElementById("chunkDocTitle").textContent = chunk.docName;
+  document.getElementById("chunkIndex").textContent = chunk.index + 1;
+
+  document.getElementById("chunkText").innerHTML =
+    highlightTerms(chunk.text, normalizeTerms(searchInput.value));
+
+  document.getElementById("chunkViewModal").style.display = "block";
+}
+
+// new 2026-01-13
+function showDocViewModal(doc) {
+  document.getElementById("docViewTitle").textContent = doc.name;
+  document.getElementById("docViewContent").textContent = doc.text;
+  document.getElementById("docViewModal").style.display = "block";
+}
+
+function showDeleteConfirmModal(message, onConfirm) {
+  document.getElementById('deleteConfirmMessage').textContent = message;
+  document.getElementById('deleteConfirmModal').style.display = 'block';
+
+  const yesBtn = document.getElementById('deleteConfirmYes');
+  const noBtn = document.getElementById('deleteConfirmNo');
+
+  const handleYes = async () => {
+    await onConfirm();
+    document.getElementById('deleteConfirmModal').style.display = 'none';
+    yesBtn.removeEventListener('click', handleYes);
+    noBtn.removeEventListener('click', handleNo);
+  };
+
+  const handleNo = () => {
+    document.getElementById('deleteConfirmModal').style.display = 'none';
+    yesBtn.removeEventListener('click', handleYes);
+    noBtn.removeEventListener('click', handleNo);
+  };
+
+  yesBtn.addEventListener('click', handleYes);
+  noBtn.addEventListener('click', handleNo);
+}
+
+// new 2026-01-14
+function extractDatesFromText(text) {
+  const datePatterns = [
+    /#(\d{4}-\d{2}-\d{2})/g,        // #2026-01-18
+    /#(\d{1,2}\/\d{1,2}\/\d{4})/g,  // #01/18/2026
+    /#([A-Za-z]+\s\d{1,2})/g       // #March 18
+  ];
+
+  const foundDates = new Set();
+
+  datePatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      foundDates.add(match[1]);
+    }
+  });
+
+  return Array.from(foundDates);
+}
+
+// new 2026-01-14
+function extractTimesFromText(text) {
+  const timePatterns = [
+    /#(\d{1,2}:\d{2})/g,           // #14:30
+    /#(\d{1,2})(am|pm)/gi          // #9am, #3pm
+  ];
+
+  const foundTimes = new Set();
+
+  timePatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      let time = match[1];
+      if (match[2]) { // am/pm
+        const hour = parseInt(match[1]);
+        const period = match[2].toLowerCase();
+        if (period === 'pm' && hour !== 12) time = (hour + 12).toString();
+        else if (period === 'am' && hour === 12) time = '00';
+        time = time.padStart(2, '0') + ':00';
+      }
+      foundTimes.add(time);
+    }
+  });
+
+  return Array.from(foundTimes);
+}
+
+// new 2026-01-14
+function openCalendarModal() {
+  const now = new Date();
+  currentCalendarYear = now.getFullYear();
+  currentCalendarMonth = now.getMonth();
+
+  updateCalendarTitle();
+  renderCalendarMonth(currentCalendarYear, currentCalendarMonth, notes);
+  document.getElementById("calendarModal").style.display = "block";
+}
+
+// Update calendar title based on current year/month
+function updateCalendarTitle() {
+  const monthName = new Date(currentCalendarYear, currentCalendarMonth).toLocaleString('default', { month: 'long' });
+  document.getElementById("calendarTitle").textContent = `${monthName} ${currentCalendarYear}`;
+}
+
+// new 2026-01-14
+function renderCalendarMonth(year, month, notes) {
+  const grid = document.getElementById("calendarGrid");
+  grid.innerHTML = "";
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date().toISOString().split("T")[0];
+
+  // Empty cells for days before the first day of the month
+  for (let i = 0; i < firstDay; i++) {
+    const emptyCell = document.createElement("div");
+    emptyCell.className = "calendar-day";
+    grid.appendChild(emptyCell);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+
+    const dayNotes = notes.filter(n =>
+      n.date === dateStr ||
+      (n.detectedDates && n.detectedDates.includes(dateStr))
+    );
+
+    const cell = document.createElement("button");
+    cell.className = "calendar-day";
+    cell.textContent = day;
+
+    if (dayNotes.length) {
+      cell.classList.add("has-notes");
+    }
+
+    if (dateStr === today) {
+      cell.classList.add("today");
+    }
+
+    cell.onclick = () => showCalendarDay(dateStr, dayNotes);
+    grid.appendChild(cell);
+  }
+}
+
+// new 2026-01-14
+function showCalendarDay(dateStr, notes) {
+  const container = document.getElementById("calendarDaySummary");
+
+  if (!notes.length) {
+    container.innerHTML = `<p>No notes for ${dateStr}</p>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <h4>${dateStr}</h4>
+    ${notes.map(n =>
+      `<div class="calendar-note">
+        <a href="#" onclick="showNoteViewModal(${JSON.stringify(n).replace(/"/g, '&quot;')}); return false;">
+          ${n.title}
+        </a>
+      </div>`
+    ).join("")}
+  `;
+}
+
+// History functions
+function saveSearchToHistory(query) {
+  const entry = {
+    query: query.trim(),
+    timestamp: new Date().toISOString()
+  };
+  searchHistory.push(entry);
+  localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+}
+
+function renderHistory() {
+  const historyList = document.getElementById('historyList');
+  historyList.innerHTML = '';
+
+  if (searchHistory.length === 0) {
+    historyList.innerHTML = '<p>No search history yet.</p>';
+    return;
+  }
+
+  const ul = document.createElement('ul');
+  searchHistory.slice().reverse().forEach(entry => {
+    const li = document.createElement('li');
+    li.textContent = `${entry.query} - ${new Date(entry.timestamp).toLocaleString()}`;
+    ul.appendChild(li);
+  });
+  historyList.appendChild(ul);
+}
+
+function clearHistory(hours) {
+  const now = new Date();
+  if (hours === 0) {
+    // Clear all
+    searchHistory = [];
+  } else {
+    const cutoff = new Date(now.getTime() - hours * 60 * 60 * 1000);
+    searchHistory = searchHistory.filter(entry => new Date(entry.timestamp) > cutoff);
+  }
+  localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+  renderHistory();
 }
 
 // new 2026-01-12
@@ -842,6 +1389,7 @@ saveNoteBtn.addEventListener("click", async () => {
   const title = document.getElementById("noteTitle").value.trim();
   const tagsRaw = document.getElementById("noteTags").value;
   const main = document.getElementById("noteMain").value;
+  const noteDate = document.getElementById("noteDate").value || null;
 
   if (!title || !main) {
     alert("Title and Main Notes are required.");
@@ -853,11 +1401,19 @@ saveNoteBtn.addEventListener("click", async () => {
     .filter(t => t.startsWith("#"))
     .map(t => t.replace("#", "").toLowerCase());
 
+  // new 2026-01-14
+  const detectedDates = extractDatesFromText(main);
+  const detectedTimes = extractTimesFromText(main);
+
   const note = {
     id: editingNoteId ?? crypto.randomUUID(),
     type: "note",
     title,
     tags,
+    date: noteDate,
+    time: document.getElementById("noteTime").value || null,
+    detectedDates,
+    detectedTimes,
     sections: {
       main,
       concepts: document.getElementById("noteConcepts").value,
@@ -875,6 +1431,24 @@ saveNoteBtn.addEventListener("click", async () => {
 
   editingNoteId = null;
   clearNoteForm();
+
+  // new 2026-01-12
+  // Exit note mode after save for clarity
+  appMode = "ask";
+  noteSection.hidden = true;
+  askSection.hidden = false;
+
+  toggleBtn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg> New Note
+  `;
+
+  notes = await loadAllFromStore("notes"); // new 2026-01-14
+  renderNotesList(notes);
+  renderTodayCard(notes);
+  renderUpcomingCard(notes);
 });
 
 // new 2026-01-12
@@ -975,14 +1549,18 @@ async function deleteNote(noteId) {
   await deleteDocument(noteId);
 
   // reload notes list
-  const notes = await loadAllFromStore("notes");
+  notes = await loadAllFromStore("notes"); // new 2026-01-14
   renderNotesList(notes);
+  renderTodayCard(notes);
+  renderUpcomingCard(notes);
 }
 
 // new 2026-01-12
 function clearNoteForm() {
   [
     "noteTitle",
+    "noteDate",
+    "noteTime",
     "noteTags",
     "noteMain",
     "noteConcepts",
@@ -997,6 +1575,8 @@ function loadNoteForEdit(note) {
   editingNoteId = note.id;
 
   document.getElementById("noteTitle").value = note.title;
+  document.getElementById("noteDate").value = note.date || "";
+  document.getElementById("noteTime").value = note.time || "";
   document.getElementById("noteTags").value =
     note.tags.map(t => "#" + t).join(" ");
   document.getElementById("noteMain").value = note.sections.main;
@@ -1010,6 +1590,13 @@ function loadNoteForEdit(note) {
   toggleBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Close Note';
 }
 
+// Function to update the dashboard greeting
+function updateGreeting() {
+  const name = localStorage.getItem('profileName') || '';
+  const title = name ? `Welcome, ${name}!` : 'Dashboard';
+  document.getElementById('dashboardTitle').textContent = title;
+}
+
 // new 2026-01-12
 window.addEventListener("DOMContentLoaded", async () => {
   await openDB();
@@ -1019,6 +1606,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const savedChunks = await loadAllFromStore("chunks");
 
   documents.push(...savedDocs);
+  notes = savedNotes; // new 2026-01-14
   chunks.push(...savedChunks);
 
   // new 2026-01-12
@@ -1039,9 +1627,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  renderNotesList(savedNotes);
+  renderNotesList(notes);
   renderFileStatus();
   renderChunkStatus();
+  renderTodayCard(notes);
+  renderUpcomingCard(notes);
 
   // Settings functionality
   const settingsLi = document.querySelector('.sidebar li:nth-child(3)'); // Settings
@@ -1050,6 +1640,17 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   settingsLi.addEventListener('click', () => {
     settingsPanel.hidden = !settingsPanel.hidden;
+  });
+
+  // History functionality
+  const historyLi = document.querySelector('.sidebar li:nth-child(2)'); // History
+  const historyPanel = document.getElementById('historyPanel');
+
+  historyLi.addEventListener('click', () => {
+    historyPanel.hidden = !historyPanel.hidden;
+    if (!historyPanel.hidden) {
+      renderHistory();
+    }
   });
 
   // Load theme preference
@@ -1069,10 +1670,96 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  // Load profile
+  document.getElementById('profileName').value = localStorage.getItem('profileName') || '';
+  document.getElementById('profileEmail').value = localStorage.getItem('profileEmail') || '';
+  document.getElementById('profileBio').value = localStorage.getItem('profileBio') || '';
+
+  updateGreeting();
+
+  // Load search history
+  const storedHistory = localStorage.getItem('searchHistory');
+  if (storedHistory) {
+    searchHistory = JSON.parse(storedHistory);
+  }
+
+  // Save profile
+  document.getElementById('saveProfileBtn').addEventListener('click', () => {
+    localStorage.setItem('profileName', document.getElementById('profileName').value);
+    localStorage.setItem('profileEmail', document.getElementById('profileEmail').value);
+    localStorage.setItem('profileBio', document.getElementById('profileBio').value);
+    alert('Profile saved!');
+    updateGreeting();
+  });
+
   // Modal close
   document.getElementById('closeModal').addEventListener('click', () => {
     document.getElementById('noResultsModal').style.display = 'none';
   });
+
+  // Note view modal
+  document.getElementById('editFromViewBtn').addEventListener('click', () => {
+    document.getElementById('noteViewModal').style.display = 'none';
+    loadNoteForEdit(currentViewingNote);
+  });
+
+  document.getElementById('deleteFromViewBtn').addEventListener('click', () => {
+    showDeleteConfirmModal(`Delete note "${currentViewingNote.title}"?`, async () => {
+      await deleteNote(currentViewingNote.id);
+      document.getElementById('noteViewModal').style.display = 'none';
+    });
+  });
+
+  document.getElementById('closeViewModal').addEventListener('click', () => {
+    document.getElementById('noteViewModal').style.display = 'none';
+  });
+
+  // new 2026-01-13
+  document.getElementById('closeChunkModal').addEventListener('click', () => {
+    document.getElementById('chunkViewModal').style.display = 'none';
+  });
+
+  document.getElementById('closeDocModal').addEventListener('click', () => {
+    document.getElementById('docViewModal').style.display = 'none';
+  });
+
+  // new 2026-01-14
+  document.getElementById("openCalendar").onclick = () => {
+    openCalendarModal();
+  };
+
+  document.getElementById('closeCalendar').addEventListener('click', () => {
+    document.getElementById('calendarModal').style.display = 'none';
+  });
+
+  // Calendar navigation
+  document.getElementById('prevMonth').addEventListener('click', () => {
+    if (currentCalendarMonth === 0) {
+      currentCalendarMonth = 11;
+      currentCalendarYear--;
+    } else {
+      currentCalendarMonth--;
+    }
+    updateCalendarTitle();
+    renderCalendarMonth(currentCalendarYear, currentCalendarMonth, notes);
+  });
+
+  document.getElementById('nextMonth').addEventListener('click', () => {
+    if (currentCalendarMonth === 11) {
+      currentCalendarMonth = 0;
+      currentCalendarYear++;
+    } else {
+      currentCalendarMonth++;
+    }
+    updateCalendarTitle();
+    renderCalendarMonth(currentCalendarYear, currentCalendarMonth, notes);
+  });
+
+  // History clear buttons
+  document.getElementById('clearLastHour').addEventListener('click', () => clearHistory(1));
+  document.getElementById('clearLastDay').addEventListener('click', () => clearHistory(24));
+  document.getElementById('clearLastWeek').addEventListener('click', () => clearHistory(168)); // 7*24
+  document.getElementById('clearAll').addEventListener('click', () => clearHistory(0));
 });
 </script>
 
