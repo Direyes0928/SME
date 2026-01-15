@@ -332,6 +332,23 @@
     .calendar-note a:hover {
       text-decoration: underline;
     }
+
+    /* Note Saved Modal Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
   </style>
 </head>
 
@@ -438,6 +455,8 @@
       placeholder="Write your main notes here..."
     ></textarea>
 
+    <button id="rewriteNoteBtn">✨ Rewrite for clarity</button>
+
     <details>
       <summary><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5V19M5 12H19" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Add Sections</summary>
 
@@ -453,6 +472,15 @@
       <label>Open Questions</label>
       <textarea id="noteQuestions" rows="3"></textarea>
     </details>
+
+    <div id="synthesizedView" style="margin-top: 1rem; padding: 1rem; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9;">
+      <strong>Synthesized View</strong>
+      <div id="synthSummary"></div>
+      <div id="synthActionItems"></div>
+      <div id="synthOpenQuestions"></div>
+      <div id="synthKeyDates"></div>
+      <div id="synthAdditionalNotes"></div>
+    </div>
 
     <button id="saveNoteBtn">Save Note</button>
   </div>
@@ -557,6 +585,19 @@
     <hr>
     <div id="calendarDaySummary"></div>
     <button id="closeCalendar">Close</button>
+  </div>
+</div>
+
+<!-- Note Saved Modal -->
+<div id="noteSavedModal" class="modal">
+  <div class="modal-content" style="text-align: center; animation: fadeIn 0.5s ease-in;">
+    <div style="display: inline-flex; align-items: center; margin-bottom: 1rem;">
+      <img src="assets/nugget logo.png" width="48" height="48" alt="Nugget Logo" style="animation: bounce 0.6s ease;">
+      <span style="color: black; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 24px; margin-left: 12px;">Nugget</span>
+    </div>
+    <h2 style="color: #28a745; margin: 0; animation: slideUp 0.5s ease 0.2s both;">Note Saved!</h2>
+    <p style="margin: 1rem 0 0 0; color: #666;">Your note has been saved successfully.</p>
+    <button id="closeNoteSavedModal" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">OK</button>
   </div>
 </div>
 
@@ -1020,6 +1061,10 @@ toggleBtn.addEventListener("click", () => {
 
   toggleBtn.innerHTML =
     appMode === "note" ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Close Note' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> New Note';
+
+  if (appMode === "note") {
+    renderSynthesizedView(document.getElementById("noteMain").value);
+  }
 });
 
 // new 2026-01-12
@@ -1034,6 +1079,70 @@ function normalizeTerms(query) {
     .replace(/[^\w\s]/g, "") // remove punctuation
     .split(/\s+/)
     .filter(term => term.length > 2 && !STOP_WORDS.has(term));
+}
+
+// new 2026-01-14
+function rewriteForClarity(text) {
+  return text
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => {
+      if (line.startsWith('-')) return '• ' + line.slice(1).trim();
+      if (!line.startsWith('•')) return '• ' + line;
+      return line;
+    })
+    .join('\n');
+}
+
+// new 2026-01-14
+function synthesizeNote(text) {
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+  
+  const result = {
+    summary: [],
+    actionItems: [],
+    openQuestions: [],
+    keyDates: [],
+    additionalNotes: []
+  };
+
+  // First 2-3 sentences for summary
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim());
+  result.summary = sentences.slice(0, 3).map(s => s.trim());
+
+  // Process each line for categorization
+  lines.forEach(line => {
+    const lowerLine = line.toLowerCase();
+    if (lowerLine.includes('need to') || lowerLine.includes('ask') || lowerLine.includes('confirm')) {
+      result.actionItems.push(line);
+    } else if (line.endsWith('?')) {
+      result.openQuestions.push(line);
+    } else if (extractDatesFromText(line).length > 0 || extractTimesFromText(line).length > 0) {
+      result.keyDates.push(line);
+    } else {
+      result.additionalNotes.push(line);
+    }
+  });
+
+  return result;
+}
+
+// new 2026-01-14
+function renderSynthesizedView(text) {
+  const synth = synthesizeNote(text);
+  
+  const summaryDiv = document.getElementById('synthSummary');
+  const actionDiv = document.getElementById('synthActionItems');
+  const questionsDiv = document.getElementById('synthOpenQuestions');
+  const datesDiv = document.getElementById('synthKeyDates');
+  const notesDiv = document.getElementById('synthAdditionalNotes');
+
+  summaryDiv.innerHTML = synth.summary.length ? `<strong>Summary:</strong><br>${synth.summary.join('. ')}.` : '';
+  actionDiv.innerHTML = synth.actionItems.length ? `<strong>Action Items:</strong><br>${synth.actionItems.map(item => '• ' + item).join('<br>')}` : '';
+  questionsDiv.innerHTML = synth.openQuestions.length ? `<strong>Open Questions:</strong><br>${synth.openQuestions.map(q => '• ' + q).join('<br>')}` : '';
+  datesDiv.innerHTML = synth.keyDates.length ? `<strong>Key Dates:</strong><br>${synth.keyDates.map(d => '• ' + d).join('<br>')}` : '';
+  notesDiv.innerHTML = synth.additionalNotes.length ? `<strong>Additional Notes:</strong><br>${synth.additionalNotes.map(n => '• ' + n).join('<br>')}` : '';
 }
 
 // new 2026-01-12
@@ -1314,7 +1423,30 @@ function renderCalendarMonth(year, month, notes) {
       cell.classList.add("today");
     }
 
-    cell.onclick = () => showCalendarDay(dateStr, dayNotes);
+    cell.onclick = () => {
+      // Close calendar modal
+      document.getElementById('calendarModal').style.display = 'none';
+      
+      // Switch to note mode
+      appMode = "note";
+      noteSection.hidden = false;
+      askSection.hidden = true;
+      
+      // Hide dashboard sections
+      calendarSection.hidden = true;
+      sourcesSection.hidden = true;
+      loadDocsSection.hidden = true;
+      yourNotesSection.hidden = true;
+      
+      // Pre-fill the date
+      document.getElementById("noteDate").value = dateStr;
+      
+      // Update toggle button
+      toggleBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Close Note';
+      
+      // Render synthesized view
+      renderSynthesizedView(document.getElementById("noteMain").value);
+    };
     grid.appendChild(cell);
   }
 }
@@ -1438,6 +1570,12 @@ saveNoteBtn.addEventListener("click", async () => {
   noteSection.hidden = true;
   askSection.hidden = false;
 
+  // Show dashboard sections again
+  calendarSection.hidden = false;
+  sourcesSection.hidden = false;
+  loadDocsSection.hidden = false;
+  yourNotesSection.hidden = false;
+
   toggleBtn.innerHTML = `
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -1449,6 +1587,19 @@ saveNoteBtn.addEventListener("click", async () => {
   renderNotesList(notes);
   renderTodayCard(notes);
   renderUpcomingCard(notes);
+
+  // Show note saved modal
+  document.getElementById('noteSavedModal').style.display = 'block';
+});
+
+// new 2026-01-14
+document.getElementById("rewriteNoteBtn").addEventListener("click", () => {
+  const textarea = document.getElementById("noteMain");
+  const original = textarea.value;
+  const rewritten = rewriteForClarity(original);
+
+  textarea.value = rewritten;
+  renderSynthesizedView(rewritten);
 });
 
 // new 2026-01-12
@@ -1584,6 +1735,8 @@ function loadNoteForEdit(note) {
   document.getElementById("noteDefinitions").value = note.sections.definitions;
   document.getElementById("noteExamples").value = note.sections.examples;
   document.getElementById("noteQuestions").value = note.sections.questions;
+
+  renderSynthesizedView(note.sections.main);
 
   noteSection.hidden = false;
   askSection.hidden = true;
@@ -1732,6 +1885,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('calendarModal').style.display = 'none';
   });
 
+  document.getElementById('closeNoteSavedModal').addEventListener('click', () => {
+    document.getElementById('noteSavedModal').style.display = 'none';
+  });
+
   // Calendar navigation
   document.getElementById('prevMonth').addEventListener('click', () => {
     if (currentCalendarMonth === 0) {
@@ -1760,6 +1917,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.getElementById('clearLastDay').addEventListener('click', () => clearHistory(24));
   document.getElementById('clearLastWeek').addEventListener('click', () => clearHistory(168)); // 7*24
   document.getElementById('clearAll').addEventListener('click', () => clearHistory(0));
+
+  // Synthesized view update
+  document.getElementById('noteMain').addEventListener('input', (e) => {
+    renderSynthesizedView(e.target.value);
+  });
 });
 </script>
 
