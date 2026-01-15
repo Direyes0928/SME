@@ -359,12 +359,12 @@
 <h3>
   <div style="display: inline-flex; align-items: center;">
     <img src="assets/nugget logo.png" width="40" height="40" alt="Nugget Logo">
-    <span style="color: black; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 18px; margin-left: 8px;">Nugget</span>
+    <span style="color: var(--text); font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 18px; margin-left: 8px;">Nugget</span>
   </div>
 </h3>
 <ul>
 <li>Dashboard</li>
-<li>History</li>
+<li title="View your search history and clear old entries">History</li>
 <li>Settings</li>
 </ul>
 <button id="toggleNoteMode"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> New Note</button>
@@ -384,6 +384,12 @@
     <span class="slider"></span>
   </label>
   <span> Light Mode</span>
+  <br><br>
+  <label class="toggle">
+    <input type="checkbox" id="stepByStepToggle" />
+    <span class="slider"></span>
+  </label>
+  <span> Step-by-Step Answers</span>
 </div>
 <div id="historyPanel" hidden>
   <h4>Search History</h4>
@@ -440,13 +446,17 @@
     <input id="noteTitle" placeholder="Intro to Policy – Exam Prep" />
 
     <label>Associated Date (optional)</label>
-    <input type="date" id="noteDate" />
+    <input type="date" id="noteDate" style="width: 150px;" />
 
     <label>Associated Time (optional)</label>
-    <input type="time" id="noteTime" />
+    <input type="time" id="noteTime" style="width: 120px;" />
 
     <label>Tags (use #hashtags)</label>
     <input id="noteTags" placeholder="#midterm #policy #examPrep" />
+
+    <label>Attach Images (PNG, JPG, WEBP)</label>
+    <input type="file" id="noteImages" accept="image/png,image/jpeg,image/webp" multiple />
+    <div id="imagePreview" style="margin-top: 0.5rem;"></div>
 
     <label>Main Notes</label>
     <textarea
@@ -455,7 +465,11 @@
       placeholder="Write your main notes here..."
     ></textarea>
 
-    <button id="rewriteNoteBtn">✨ Rewrite for clarity</button>
+    <button id="rewriteNoteBtn" title="Rewrite for clarity">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 3L14.09 8.26L20 6.27L17.91 11.53L23 13.52L17.91 15.51L20 20.77L14.09 18.78L12 24L9.91 18.78L4 20.77L6.09 15.51L1 13.52L6.09 11.53L4 6.27L9.91 8.26L12 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
 
     <details>
       <summary><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5V19M5 12H19" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Add Sections</summary>
@@ -498,7 +512,7 @@
 
 <section id="askMode" class="chat-section">
   <div class="card">
-    <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 3 19 11Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Ask Your SME</strong>
+    <strong title="Ask questions about your documents and notes. Get answers based on your uploaded content with AI-powered search and synthesis."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 3 19 11Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Ask Your SME</strong>
     <input
       type="text"
       id="searchInput"
@@ -517,7 +531,7 @@
         <svg width="40" height="40" viewBox="0 0 50 50">
           <path d="M10 20 Q10 10 20 10 L30 10 Q40 10 40 20 L40 30 Q40 40 30 40 L20 40 Q10 40 10 30 Z" fill="white" stroke="#FFA500" stroke-width="1"/>
         </svg>
-        <span style="color: black; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 22px; margin-left: 12px;">No nuggets found</span>
+        <span style="color: var(--text); font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 22px; margin-left: 12px;">No nuggets found</span>
       </div>
     </div>
     <button id="closeModal">Close</button>
@@ -564,7 +578,7 @@
     <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
       <div style="display: inline-flex; align-items: center;">
         <img src="assets/nugget logo.png" width="64" height="64" alt="Nugget Logo">
-        <span style="color: black; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 20px; margin-left: 8px;">Nugget</span>
+        <span style="color: var(--text); font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 20px; margin-left: 8px;">Nugget</span>
       </div>
     </div>
     <p id="deleteConfirmMessage">Are you sure you want to delete?</p>
@@ -593,7 +607,7 @@
   <div class="modal-content" style="text-align: center; animation: fadeIn 0.5s ease-in;">
     <div style="display: inline-flex; align-items: center; margin-bottom: 1rem;">
       <img src="assets/nugget logo.png" width="48" height="48" alt="Nugget Logo" style="animation: bounce 0.6s ease;">
-      <span style="color: black; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 24px; margin-left: 12px;">Nugget</span>
+      <span style="color: var(--text); font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 24px; margin-left: 12px;">Nugget</span>
     </div>
     <h2 style="color: #28a745; margin: 0; animation: slideUp 0.5s ease 0.2s both;">Note Saved!</h2>
     <p style="margin: 1rem 0 0 0; color: #666;">Your note has been saved successfully.</p>
@@ -614,6 +628,9 @@ let appMode = "ask"; // "ask" | "note"
 
 // new 2026-01-12
 let editingNoteId = null;
+
+// new 2026-01-14
+let uploadedImages = [];
 
 // new 2026-01-12
 let currentViewingNote = null;
@@ -963,6 +980,7 @@ function showNoteViewModal(note) {
   document.getElementById('viewNoteUpdated').textContent = new Date(note.updatedAt).toLocaleDateString();
   const contentDiv = document.getElementById('viewNoteContent');
   contentDiv.innerHTML = `
+    ${note.images && note.images.length ? `<p><strong>Images:</strong></p><div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">${note.images.map(img => `<img src="${img.data}" style="max-width: 200px; max-height: 200px; border: 1px solid #ccc; border-radius: 4px;" alt="${img.name}">`).join('')}</div>` : ''}
     <p><strong>Main Notes:</strong></p>
     <p>${note.sections.main.replace(/\n/g, '<br>')}</p>
     ${note.sections.concepts ? `<p><strong>Key Concepts:</strong></p><p>${note.sections.concepts.replace(/\n/g, '<br>')}</p>` : ''}
@@ -1071,6 +1089,40 @@ toggleBtn.addEventListener("click", () => {
 const STOP_WORDS = new Set([
   "what", "are", "is", "the", "on", "in", "of", "to", "and", "for"
 ]);
+
+// new 2026-01-14
+function handleImageUpload(event) {
+  const files = Array.from(event.target.files);
+  const previewDiv = document.getElementById('imagePreview');
+  previewDiv.innerHTML = '';
+  uploadedImages = [];
+
+  files.forEach((file, index) => {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageData = {
+          name: file.name,
+          type: file.type,
+          data: e.target.result,
+          id: `img_${Date.now()}_${index}`
+        };
+        uploadedImages.push(imageData);
+
+        // Create preview
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.maxWidth = '200px';
+        img.style.maxHeight = '200px';
+        img.style.margin = '0.5rem';
+        img.style.border = '1px solid #ccc';
+        img.style.borderRadius = '4px';
+        previewDiv.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
 
 // new 2026-01-12
 function normalizeTerms(query) {
@@ -1546,6 +1598,7 @@ saveNoteBtn.addEventListener("click", async () => {
     time: document.getElementById("noteTime").value || null,
     detectedDates,
     detectedTimes,
+    images: uploadedImages, // new 2026-01-14
     sections: {
       main,
       concepts: document.getElementById("noteConcepts").value,
@@ -1719,6 +1772,11 @@ function clearNoteForm() {
     "noteExamples",
     "noteQuestions"
   ].forEach(id => document.getElementById(id).value = "");
+
+  // Clear uploaded images
+  uploadedImages = [];
+  document.getElementById('noteImages').value = '';
+  document.getElementById('imagePreview').innerHTML = '';
 }
 
 // new 2026-01-12
@@ -1735,6 +1793,21 @@ function loadNoteForEdit(note) {
   document.getElementById("noteDefinitions").value = note.sections.definitions;
   document.getElementById("noteExamples").value = note.sections.examples;
   document.getElementById("noteQuestions").value = note.sections.questions;
+
+  // Load images if they exist
+  uploadedImages = note.images || [];
+  const previewDiv = document.getElementById('imagePreview');
+  previewDiv.innerHTML = '';
+  uploadedImages.forEach(image => {
+    const img = document.createElement('img');
+    img.src = image.data;
+    img.style.maxWidth = '200px';
+    img.style.maxHeight = '200px';
+    img.style.margin = '0.5rem';
+    img.style.border = '1px solid #ccc';
+    img.style.borderRadius = '4px';
+    previewDiv.appendChild(img);
+  });
 
   renderSynthesizedView(note.sections.main);
 
@@ -1790,6 +1863,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const settingsLi = document.querySelector('.sidebar li:nth-child(3)'); // Settings
   const settingsPanel = document.getElementById('settingsPanel');
   const themeToggle = document.getElementById('themeToggle');
+  const stepByStepToggle = document.getElementById('stepByStepToggle');
 
   settingsLi.addEventListener('click', () => {
     settingsPanel.hidden = !settingsPanel.hidden;
@@ -1821,6 +1895,14 @@ window.addEventListener("DOMContentLoaded", async () => {
       document.body.classList.remove('light-mode');
       localStorage.setItem('lightMode', 'false');
     }
+  });
+
+  // Load step-by-step preference
+  const isStepByStep = localStorage.getItem('stepByStepMode') === 'true';
+  stepByStepToggle.checked = isStepByStep;
+
+  stepByStepToggle.addEventListener('change', () => {
+    localStorage.setItem('stepByStepMode', stepByStepToggle.checked ? 'true' : 'false');
   });
 
   // Load profile
@@ -1922,6 +2004,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.getElementById('noteMain').addEventListener('input', (e) => {
     renderSynthesizedView(e.target.value);
   });
+
+  // Image upload handling
+  document.getElementById('noteImages').addEventListener('change', handleImageUpload);
 });
 </script>
 
