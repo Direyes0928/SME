@@ -7,7 +7,7 @@
 
   <style>
     :root {
-      --bg: #000000;
+      --bg: #1a1a1a;
       --text: #ffffff;
       --card-bg: #111111;
       --border: #333333;
@@ -163,6 +163,22 @@
       resize: vertical;
     }
 
+    #noteMain:empty:before {
+      content: attr(placeholder);
+      color: var(--text);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    #noteMain img {
+      max-width: 100%;
+      height: auto;
+      cursor: move;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin: 0.5rem 0;
+    }
+
     button {
       margin-top: 0.75rem;
       padding: 0.5rem 1rem;
@@ -295,29 +311,76 @@
     }
 
     .calendar-day {
-      width: 30px;
-      height: 30px;
+      width: 36px;
+      height: 36px;
       border: 1px solid var(--border);
       background: var(--card-bg);
       color: var(--text);
       cursor: pointer;
       display: inline-block;
       text-align: center;
-      line-height: 30px;
-      margin: 2px;
+      line-height: 36px;
+      margin: 1px;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+
+    .calendar-day.empty {
+      background: transparent;
+      border: none;
+      cursor: default;
+    }
+
+    .calendar-header {
+      width: 36px;
+      height: 24px;
+      display: inline-block;
+      text-align: center;
+      line-height: 24px;
+      margin: 1px;
+      font-weight: bold;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    #calendarGrid {
+      display: grid;
+      grid-template-columns: repeat(7, 40px);
+      gap: 2px;
+      justify-content: center;
+      margin: 1rem 0;
     }
 
     .calendar-day:hover {
       background: var(--highlight);
+      transform: scale(1.05);
+      transition: all 0.2s ease;
+    }
+
+    .calendar-day:active {
+      transform: scale(0.95);
     }
 
     .calendar-day.has-notes {
       background: var(--button-bg);
       font-weight: bold;
+      position: relative;
+    }
+
+    .calendar-day.has-notes::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 6px;
+      height: 6px;
+      background: var(--text);
+      border-radius: 50%;
     }
 
     .calendar-day.today {
       border: 2px solid var(--text);
+      font-weight: bold;
     }
 
     .calendar-note {
@@ -384,12 +447,6 @@
     <span class="slider"></span>
   </label>
   <span> Light Mode</span>
-  <br><br>
-  <label class="toggle">
-    <input type="checkbox" id="stepByStepToggle" />
-    <span class="slider"></span>
-  </label>
-  <span> Step-by-Step Answers</span>
 </div>
 <div id="historyPanel" hidden>
   <h4>Search History</h4>
@@ -422,9 +479,7 @@
 <section id="sourcesSection">
   <div class="card">
     <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Sources</strong>
-    <p>Notes: Not connected</p>
-    <p>Documents: Not connected</p>
-    <p>Calendar: Not connected</p>
+    <p>Not Connected (Coming soon)</p>
   </div>
 </section>
 
@@ -459,11 +514,12 @@
     <div id="imagePreview" style="margin-top: 0.5rem;"></div>
 
     <label>Main Notes</label>
-    <textarea
+    <div
       id="noteMain"
-      rows="6"
+      contenteditable="true"
       placeholder="Write your main notes here..."
-    ></textarea>
+      style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--input-border); background: var(--card-bg); color: var(--text); min-height: 120px; outline: none; resize: vertical; overflow: auto;"
+    ></div>
 
     <button id="rewriteNoteBtn" title="Rewrite for clarity">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -487,7 +543,7 @@
       <textarea id="noteQuestions" rows="3"></textarea>
     </details>
 
-    <div id="synthesizedView" style="margin-top: 1rem; padding: 1rem; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9;">
+    <div id="synthesizedView" style="margin-top: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg);">
       <strong>Synthesized View</strong>
       <div id="synthSummary"></div>
       <div id="synthActionItems"></div>
@@ -589,16 +645,16 @@
 
 <!-- new 2026-01-14 -->
 <div id="calendarModal" class="modal">
-  <div class="modal-content">
-    <h3 id="calendarTitle"></h3>
+  <div class="modal-content" style="max-width: 400px; padding: 1.5rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <button id="prevMonth" style="font-size: 1.5rem; padding: 0.5rem;">&lt;</button>
-      <button id="nextMonth" style="font-size: 1.5rem; padding: 0.5rem;">&gt;</button>
+      <button id="prevMonth" style="background: var(--button-bg); border: none; color: var(--text); padding: 0.5rem; border-radius: 4px; cursor: pointer;">&larr;</button>
+      <h3 id="calendarTitle" style="margin: 0; color: var(--text); font-size: 1.2rem;"></h3>
+      <button id="nextMonth" style="background: var(--button-bg); border: none; color: var(--text); padding: 0.5rem; border-radius: 4px; cursor: pointer;">&rarr;</button>
     </div>
     <div id="calendarGrid"></div>
-    <hr>
+    <hr style="border-color: var(--border); margin: 1rem 0;">
     <div id="calendarDaySummary"></div>
-    <button id="closeCalendar">Close</button>
+    <button id="closeCalendar" style="background: var(--button-bg); border: none; color: var(--text); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 1rem; width: 100%;">Close</button>
   </div>
 </div>
 
@@ -923,7 +979,8 @@ function isWithinDays(dateStr, days) {
 }
 
 function renderTodayCard(notes) {
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   const todaysNotes = notes.filter(note => {
     // 1️⃣ Explicit date always wins
@@ -1081,7 +1138,7 @@ toggleBtn.addEventListener("click", () => {
     appMode === "note" ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Close Note' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> New Note';
 
   if (appMode === "note") {
-    renderSynthesizedView(document.getElementById("noteMain").value);
+    renderSynthesizedView(document.getElementById("noteMain").textContent);
   }
 });
 
@@ -1446,12 +1503,22 @@ function renderCalendarMonth(year, month, notes) {
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  // Add day headers
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  dayNames.forEach(dayName => {
+    const header = document.createElement("div");
+    header.className = "calendar-header";
+    header.textContent = dayName;
+    grid.appendChild(header);
+  });
 
   // Empty cells for days before the first day of the month
   for (let i = 0; i < firstDay; i++) {
     const emptyCell = document.createElement("div");
-    emptyCell.className = "calendar-day";
+    emptyCell.className = "calendar-day empty";
     grid.appendChild(emptyCell);
   }
 
@@ -1497,7 +1564,7 @@ function renderCalendarMonth(year, month, notes) {
       toggleBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18M6 6L18 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Close Note';
       
       // Render synthesized view
-      renderSynthesizedView(document.getElementById("noteMain").value);
+      renderSynthesizedView(document.getElementById("noteMain").textContent);
     };
     grid.appendChild(cell);
   }
@@ -1572,7 +1639,7 @@ const saveNoteBtn = document.getElementById("saveNoteBtn");
 saveNoteBtn.addEventListener("click", async () => {
   const title = document.getElementById("noteTitle").value.trim();
   const tagsRaw = document.getElementById("noteTags").value;
-  const main = document.getElementById("noteMain").value;
+  const main = document.getElementById("noteMain").innerHTML;
   const noteDate = document.getElementById("noteDate").value || null;
 
   if (!title || !main) {
@@ -1648,10 +1715,10 @@ saveNoteBtn.addEventListener("click", async () => {
 // new 2026-01-14
 document.getElementById("rewriteNoteBtn").addEventListener("click", () => {
   const textarea = document.getElementById("noteMain");
-  const original = textarea.value;
+  const original = textarea.textContent;
   const rewritten = rewriteForClarity(original);
 
-  textarea.value = rewritten;
+  textarea.textContent = rewritten;
   renderSynthesizedView(rewritten);
 });
 
@@ -1766,12 +1833,13 @@ function clearNoteForm() {
     "noteDate",
     "noteTime",
     "noteTags",
-    "noteMain",
     "noteConcepts",
     "noteDefinitions",
     "noteExamples",
     "noteQuestions"
   ].forEach(id => document.getElementById(id).value = "");
+
+  document.getElementById("noteMain").innerHTML = "";
 
   // Clear uploaded images
   uploadedImages = [];
@@ -1788,7 +1856,7 @@ function loadNoteForEdit(note) {
   document.getElementById("noteTime").value = note.time || "";
   document.getElementById("noteTags").value =
     note.tags.map(t => "#" + t).join(" ");
-  document.getElementById("noteMain").value = note.sections.main;
+  document.getElementById("noteMain").innerHTML = note.sections.main;
   document.getElementById("noteConcepts").value = note.sections.concepts;
   document.getElementById("noteDefinitions").value = note.sections.definitions;
   document.getElementById("noteExamples").value = note.sections.examples;
@@ -1863,7 +1931,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   const settingsLi = document.querySelector('.sidebar li:nth-child(3)'); // Settings
   const settingsPanel = document.getElementById('settingsPanel');
   const themeToggle = document.getElementById('themeToggle');
-  const stepByStepToggle = document.getElementById('stepByStepToggle');
 
   settingsLi.addEventListener('click', () => {
     settingsPanel.hidden = !settingsPanel.hidden;
@@ -1895,14 +1962,6 @@ window.addEventListener("DOMContentLoaded", async () => {
       document.body.classList.remove('light-mode');
       localStorage.setItem('lightMode', 'false');
     }
-  });
-
-  // Load step-by-step preference
-  const isStepByStep = localStorage.getItem('stepByStepMode') === 'true';
-  stepByStepToggle.checked = isStepByStep;
-
-  stepByStepToggle.addEventListener('change', () => {
-    localStorage.setItem('stepByStepMode', stepByStepToggle.checked ? 'true' : 'false');
   });
 
   // Load profile
@@ -2002,7 +2061,54 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Synthesized view update
   document.getElementById('noteMain').addEventListener('input', (e) => {
-    renderSynthesizedView(e.target.value);
+    renderSynthesizedView(e.target.textContent);
+  });
+
+  // Paste image handling for noteMain
+  document.getElementById('noteMain').addEventListener('paste', (e) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          img.draggable = true;
+          img.style.maxWidth = '100%';
+          img.style.height = 'auto';
+          e.target.appendChild(img);
+          // Trigger input event to update synthesized view
+          e.target.dispatchEvent(new Event('input', { bubbles: true }));
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  });
+
+  // Make images draggable
+  document.getElementById('noteMain').addEventListener('dragstart', (e) => {
+    if (e.target.tagName === 'IMG') {
+      e.dataTransfer.setData('text/html', e.target.outerHTML);
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  });
+
+  document.getElementById('noteMain').addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.getData('text/html')) {
+      const img = document.createElement('div');
+      img.innerHTML = e.dataTransfer.getData('text/html');
+      const draggedImg = img.firstChild;
+      e.target.insertBefore(draggedImg, e.target.children[e.target.children.length - 1] || null);
+      // Trigger input event
+      e.target.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
+
+  document.getElementById('noteMain').addEventListener('dragover', (e) => {
+    e.preventDefault();
   });
 
   // Image upload handling
