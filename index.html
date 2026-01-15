@@ -413,6 +413,8 @@
       to { transform: translateY(0); opacity: 1; }
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
 </head>
 
 <body>
@@ -468,7 +470,7 @@
 
 <div class="content">
 <section id="calendarSection">
-  <div class="card" id="openCalendar">
+  <div class="card" id="openCalendar" title="Open calendar view to see notes by date">
     <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</strong>
     <p id="todaySummary"></p>
     <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Upcoming</strong>
@@ -484,9 +486,9 @@
 </section>
 
 <section id="loadDocsSection">
-  <div class="card">
+  <div class="card" title="Upload PDF, DOCX files to extract and chunk text for searching">
     <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Load Documents</strong>
-    <input type="file" id="fileInput" multiple />
+    <input type="file" id="fileInput" accept=".pdf,.docx,.txt" multiple />
     <p id="fileStatus">No files loaded.</p>
     <p id="chunkStatus">No nuggets created.</p>
     <ul id="fileList"></ul>
@@ -507,7 +509,7 @@
     <input type="time" id="noteTime" style="width: 120px;" />
 
     <label>Tags (use #hashtags)</label>
-    <input id="noteTags" placeholder="#midterm #policy #examPrep" />
+    <input id="noteTags" placeholder="#midterm #policy #examPrep" title="Use #hashtags to categorize and search your notes" />
 
     <label>Attach Images (PNG, JPG, WEBP)</label>
     <input type="file" id="noteImages" accept="image/png,image/jpeg,image/webp" multiple />
@@ -518,6 +520,7 @@
       id="noteMain"
       contenteditable="true"
       placeholder="Write your main notes here..."
+      title="Paste images here or write your notes. Images will be embedded automatically."
       style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--input-border); background: var(--card-bg); color: var(--text); min-height: 120px; outline: none; resize: vertical; overflow: auto;"
     ></div>
 
@@ -558,7 +561,7 @@
 
 <!-- new 2026-01-12 -->
 <section id="yourNotesSection">
-  <div class="card">
+  <div class="card" title="View and manage your saved notes">
     <strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Your Notes</strong>
     <ul id="notesList"></ul>
   </div>
@@ -785,6 +788,16 @@ fileInput.addEventListener("change", async (event) => {
 
 // new 2026-01-12
 async function readFileText(file) {
+  // Handle PDF files
+  if (file.type === "application/pdf") {
+    return await readPDF(file);
+  }
+
+  // Handle DOCX files
+  if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    return await readDocx(file);
+  }
+
   // Handles basic text-based files
   if (file.type.startsWith("text/")) {
     return await file.text();
@@ -2114,6 +2127,30 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Image upload handling
   document.getElementById('noteImages').addEventListener('change', handleImageUpload);
 });
+
+// PDF parsing logic
+async function readPDF(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+  let fullText = "";
+
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(i => i.str).join(" ");
+    fullText += pageText + "\n\n";
+  }
+
+  return fullText;
+}
+
+// DOCX parsing logic
+async function readDocx(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer });
+  return result.value;
+}
 </script>
 
 </body>
