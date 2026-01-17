@@ -1,6 +1,6 @@
 # Nugget AGENT
 
-NUgget Agent is a **personal, source-aware assistant** that helps users understand, recall, and act on *their own information* — notes, documents, and calendar events — without training on the open internet.
+nugget agent is a **personal, source-aware assistant** that helps users understand, recall, and act on *their own information* — notes, documents, and calendar events — without training on the open internet.
 
 This is not a general-purpose chatbot.
 This is a **private Subject Matter Expert (SME)** that only knows what you allow it to know.
